@@ -139,7 +139,7 @@ impl ConfigBlock for Pomodoro {
 
         Ok(Pomodoro {
             id: id.clone(),
-            time: ButtonWidget::new(config, &id).with_icon("pomodoro"),
+            time: ButtonWidget::new(config, &id),
             state: State::Stopped,
             length: Duration::from_secs(block_config.length * 60), // convert to minutes
             break_length: Duration::from_secs(block_config.break_length * 60), // convert to minutes

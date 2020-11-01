@@ -1,0 +1,65 @@
+{
+  "nodes": {
+    "flake-utils": {
+      "locked": {
+        "lastModified": 1601282935,
+        "narHash": "sha256-WQAFV6sGGQxrRs3a+/Yj9xUYvhTpukQJIcMbIi7LCJ4=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "588973065fce51f4763287f0fda87a174d78bf48",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1603176674,
+        "narHash": "sha256-r9vgYYqL1HfhMaVJX3b0rBoKHsc4FSSVnWArevM1Nss=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "05334ad78526ead39af85f846515606d9f052a11",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-20.09",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "nixpkgs": "nixpkgs",
+        "tinybeachthor": "tinybeachthor"
+      }
+    },
+    "tinybeachthor": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1603270247,
+        "narHash": "sha256-Uc6oe8G7wSTNqZcpjHpY9qHc8cdU2n9e4GYVR9bgC28=",
+        "owner": "tinybeachthor",
+        "repo": "nur-packages",
+        "rev": "a7b87a296f5bb5f2a23d421e124a6ff32e0f32a7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tinybeachthor",
+        "ref": "master",
+        "repo": "nur-packages",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

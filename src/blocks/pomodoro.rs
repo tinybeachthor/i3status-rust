@@ -12,44 +12,44 @@ use crate::errors::*;
 use crate::input::{I3BarEvent, MouseButton};
 use crate::scheduler::Task;
 use crate::subprocess::spawn_child_async;
-use crate::widget::I3BarWidget;
+use crate::widget::{I3BarWidget, State};
 use crate::widgets::button::ButtonWidget;
 
-enum State {
+enum PomodoroState {
     Started(Instant),
     Stopped,
     Paused(Duration),
     OnBreak(Instant),
 }
 
-impl State {
+impl PomodoroState {
     fn elapsed(&self) -> Duration {
         match self {
-            State::Started(start) => Instant::now().duration_since(start.to_owned()),
-            State::Stopped => unreachable!(),
-            State::Paused(duration) => duration.to_owned(),
-            State::OnBreak(start) => Instant::now().duration_since(start.to_owned()),
+            PomodoroState::Started(start) => Instant::now().duration_since(start.to_owned()),
+            PomodoroState::Stopped => unreachable!(),
+            PomodoroState::Paused(duration) => duration.to_owned(),
+            PomodoroState::OnBreak(start) => Instant::now().duration_since(start.to_owned()),
         }
     }
 }
 
-impl fmt::Display for State {
+impl fmt::Display for PomodoroState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            State::Stopped => write!(f, "0:00"),
-            State::Started(_) => write!(
+            PomodoroState::Stopped => write!(f, "0:00"),
+            PomodoroState::Started(_) => write!(
                 f,
                 "{}:{:02}",
                 self.elapsed().as_secs() / 60,
                 self.elapsed().as_secs() % 60
             ),
-            State::OnBreak(_) => write!(
+            PomodoroState::OnBreak(_) => write!(
                 f,
                 "{}:{:02}",
                 self.elapsed().as_secs() / 60,
                 self.elapsed().as_secs() % 60
             ),
-            State::Paused(duration) => write!(
+            PomodoroState::Paused(duration) => write!(
                 f,
                 "{}:{:02}",
                 duration.as_secs() / 60,
@@ -62,7 +62,7 @@ impl fmt::Display for State {
 pub struct Pomodoro {
     id: String,
     time: ButtonWidget,
-    state: State,
+    state: PomodoroState,
     length: Duration,
     break_length: Duration,
     update_interval: Duration,
@@ -77,6 +77,17 @@ impl Pomodoro {
     fn set_text(&mut self) {
         self.time
             .set_text(format!("{} | {}", self.count, self.state));
+        self.time
+            .set_state(self.compute_state());
+    }
+
+    fn compute_state(&self) -> State {
+        match self.state {
+            PomodoroState::Started(_) => State::Info,
+            PomodoroState::Stopped => State::Idle,
+            PomodoroState::Paused(_) => State::Warning,
+            PomodoroState::OnBreak(_) => State::Critical,
+        }
     }
 
     fn nag(&self, message: &str, level: &str) {
@@ -140,7 +151,7 @@ impl ConfigBlock for Pomodoro {
         Ok(Pomodoro {
             id: id.clone(),
             time: ButtonWidget::new(config, &id),
-            state: State::Stopped,
+            state: PomodoroState::Stopped,
             length: Duration::from_secs(block_config.length * 60), // convert to minutes
             break_length: Duration::from_secs(block_config.break_length * 60), // convert to minutes
             update_interval: Duration::from_millis(1000),
@@ -161,21 +172,21 @@ impl Block for Pomodoro {
     fn update(&mut self) -> Result<Option<Update>> {
         self.set_text();
         match &self.state {
-            State::Started(_) => {
+            PomodoroState::Started(_) => {
                 if self.state.elapsed() >= self.length {
                     if self.use_nag {
                         self.nag(&self.message, "error");
                     }
 
-                    self.state = State::OnBreak(Instant::now());
+                    self.state = PomodoroState::OnBreak(Instant::now());
                 }
             }
-            State::OnBreak(_) => {
+            PomodoroState::OnBreak(_) => {
                 if self.state.elapsed() >= self.break_length {
                     if self.use_nag {
                         self.nag(&self.break_message, "warning");
                     }
-                    self.state = State::Stopped;
+                    self.state = PomodoroState::Stopped;
                     self.count += 1;
                 }
             }
@@ -190,23 +201,23 @@ impl Block for Pomodoro {
             if name.as_str() == self.id {
                 match event.button {
                     MouseButton::Right => {
-                        self.state = State::Stopped;
+                        self.state = PomodoroState::Stopped;
                         self.count = 0;
                     }
                     _ => match &self.state {
-                        State::Stopped => {
-                            self.state = State::Started(Instant::now());
+                        PomodoroState::Stopped => {
+                            self.state = PomodoroState::Started(Instant::now());
                         }
-                        State::Started(_) => {
-                            self.state = State::Paused(self.state.elapsed());
+                        PomodoroState::Started(_) => {
+                            self.state = PomodoroState::Paused(self.state.elapsed());
                         }
-                        State::Paused(duration) => {
-                            self.state = State::Started(
+                        PomodoroState::Paused(duration) => {
+                            self.state = PomodoroState::Started(
                                 Instant::now().checked_sub(duration.to_owned()).unwrap(),
                             );
                         }
-                        State::OnBreak(_) => {
-                            self.state = State::Started(Instant::now());
+                        PomodoroState::OnBreak(_) => {
+                            self.state = PomodoroState::Started(Instant::now());
                         }
                     },
                 }

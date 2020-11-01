@@ -36,22 +36,22 @@ impl State {
 impl fmt::Display for State {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            State::Stopped => write!(f, "\u{25a0} 0:00"),
+            State::Stopped => write!(f, "0:00"),
             State::Started(_) => write!(
                 f,
-                "\u{f04b} {}:{:02}",
+                "{}:{:02}",
                 self.elapsed().as_secs() / 60,
                 self.elapsed().as_secs() % 60
             ),
             State::OnBreak(_) => write!(
                 f,
-                "\u{2615} {}:{:02}",
+                "{}:{:02}",
                 self.elapsed().as_secs() / 60,
                 self.elapsed().as_secs() % 60
             ),
             State::Paused(duration) => write!(
                 f,
-                "\u{f04c} {}:{:02}",
+                "{}:{:02}",
                 duration.as_secs() / 60,
                 duration.as_secs() % 60
             ),

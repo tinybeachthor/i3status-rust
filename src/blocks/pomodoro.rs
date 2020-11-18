@@ -218,6 +218,7 @@ impl Block for Pomodoro {
                         }
                         PomodoroState::OnBreak(_) => {
                             self.state = PomodoroState::Started(Instant::now());
+                            self.count += 1;
                         }
                     },
                 }
